@@ -1,0 +1,25 @@
+{
+    "id": 9859662,
+    "item": "D020006H6",
+    "referencia": "upload/correcao_9859662.png",
+    "sequencial": "68300003130128",
+    "solicitacao": "2000000885",
+    "situacao": "DISPONIVEL",
+    "ordem": 1,
+    "chave": [
+        {
+            "id": 186,
+            "titulo": "Chave de correção 1",
+            "opcoes": [
+                {
+                    "valor": "0",
+                    "descricao": "Certo"
+                },
+                {
+                    "valor": "1",
+                    "descricao": "Errado"
+                }
+            ]
+        }
+    ]
+}
