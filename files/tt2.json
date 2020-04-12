@@ -44,20 +44,20 @@
                     {
                         "valor": "1",
                         "descricao": "Errado"
+                    }
+                ]
+            },
+            {
+                "id": 187,
+                "titulo": "Chave de correção 2",
+                "opcoes": [
+                    {
+                        "valor": "0",
+                        "descricao": "Lido"
                     },
                     {
-                        "id": 187,
-                        "titulo": "Chave de correção 2",
-                        "opcoes": [
-                            {
-                                "valor": "0",
-                                "descricao": "Lido"
-                            },
-                            {
-                                "valor": "1",
-                                "descricao": "Não lido"
-                            }
-                        ]
+                        "valor": "1",
+                        "descricao": "Não lido"
                     }
                 ]
             }
