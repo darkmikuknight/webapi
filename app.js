@@ -5,9 +5,9 @@ const bodyParser = require('body-parser')
 const fs = require('fs')
 //const textoCorrecao = null
 var textoCorrecao
-const idCorrecao = { idCorrecao: '',
+const idCorrecao = [{ idCorrecao: '',
                      ordem: '9999'
-                   }
+                   }]
 const codigoErro = { codErro: '' }
 
 var textoCorrigido = new Object()
@@ -70,8 +70,10 @@ const getOrdem = () => {
 }
 
 
-function iniciarCorrecao (request, response, textoCorrecao){
+function iniciarCorrecao (request, response){
     //console.log(typeof textoCorrecao)
+
+    console.log('ULTI', textoCorrigido)
 
     // fs.writeFile('meuarquivo.txt', JSON.stringify(textoCorrecao), function(erro) {
     //     if(erro) {
@@ -94,7 +96,7 @@ function iniciarCorrecao (request, response, textoCorrecao){
    // proximaCorrecao()
     const idxInicial = 0
     const itemCorrigido = { id: '', situacao: '', ordem: '', chave: '', valorChave: ''}
-
+  
     Object.keys(textoCorrecao[idxInicial]).forEach(function(item){
        // console.log(item + '=' + textoCorrecao[0][item])
        
@@ -165,32 +167,35 @@ function iniciarCorrecao (request, response, textoCorrecao){
 
     // if(typeof itemCorrigido.chave == 'object')
     //console.log(textoCorrecao)
-    geraRespostaSucesso(request, response, textoCorrecao[0])
+    //if(textoCorrecao[idxInicial].situacao != 'COM_DEFEITO')
+        geraRespostaSucesso(request, response, textoCorrecao[0])
     //salvarCorrecao(request, response)
     //setIdOrdem(textoCorrecao[0])
 }
 
-function proximaCorrecao(){
+const proximaCorrecao = (response, request) => {
     console.log('proxima correcao', textoCorrecao)
     
-    Object.keys(textoCorrecao).forEach(function(item){
-        //console.log(item + '=' + objeto[item])
-        // console.log(textoCorrecao.map(e => e.id).indexOf(textoCorrecao[item]) )
-        // console.log(textoCorrecao.findIndex(item2 => item2.id === textoCorrecao[item]))
+    // Object.keys(textoCorrecao).forEach(function(item){
+    //     //console.log(item + '=' + objeto[item])
+    //     // console.log(textoCorrecao.map(e => e.id).indexOf(textoCorrecao[item]) )
+    //     // console.log(textoCorrecao.findIndex(item2 => item2.id === textoCorrecao[item]))
 
 
-        if(item === 'id'){
-           if(textoCorrecao[item] != getID()){
-              // console.log('id igual', textoCorrecao)
-             console.log(textoCorrecao.findIndex(item2 => item2.id === textoCorrecao[item]))
+    //     if(item === 'id'){
+    //        if(textoCorrecao[item] != getID()){
+    //           // console.log('id igual', textoCorrecao)
+    //          console.log(textoCorrecao.findIndex(item2 => item2.id === textoCorrecao[item]))
 
-               setIdOrdem(textoCorrecao)
-           }
-        }
+    //            setIdOrdem(textoCorrecao)
+    //        }
+    //     }
 
         //if(item === 'ordem')
-        
-    })
+       
+    // })
+    console.log('proxima')
+    iniciarCorrecao(response, request)
 
 }
 
@@ -217,7 +222,7 @@ function lerArquivo (request, response) {
 
         //response.write('Arquivo lido com sucesso! \n -Solicite a correcao (correcoes/proxima) \n\n') // + data)
         console.log('Leu arquivo')
-        iniciarCorrecao(request, response, textoCorrecao)
+        iniciarCorrecao(request, response)
         //response.end()
        
       
@@ -237,26 +242,48 @@ const erros = (request, response, chaveId, chaveValor) => {
 }
 
 const geraRespostaSucesso = (request, response, dados) => {
-
-    let a = JSON.stringify({'t': 'fdfs', 'g': 'fgd' }, null, ' ')
-    a = JSON.parse(a)
-    textoCorrigido = [a]
-    console.log('tamanha', Object.keys(textoCorrigido).length)
     let tam = Object.keys(textoCorrigido).length
-    //let situacao = dados.situacao
-    delete dados.situacao
+   // console.log('tAM', tam, textoCorrigido)
+   // if(Object.keys(textoCorrigido).length < 1){
+        let a = JSON.stringify({'tt': 'ff'}, null, ' ')
+        a = JSON.parse(a)
+        textoCorrigido = [a]
+  //  }
+    
+    //console.log('tamanha', Object.keys(textoCorrigido).length)
+  //  let tam = Object.keys(textoCorrigido).length
+
+    // let situacao = dados.situacao
+    // delete dados.situacao
     const jsonSaida = { data: dados, situacao: "SUCESSO" }
-   // console.log('tipo ', textoCorrigido)
-    //console.log(typeof (jsonSaida))
-    textoCorrigido[tam] = jsonSaida
-    console.log('-----------',typeof textoCorrigido, textoCorrigido)
-    let aux = Object.assign({}, textoCorrigido)
+
+    //console.log('dados', dados)
+     //apagar valores do objeto original
+    let indiceDeletar
+    Object.keys(textoCorrecao).forEach(function(valor){
+        //console.log('aqui', valor, textoCorrecao[valor])
+        if(dados.id == textoCorrecao[valor].id){
+            indiceDeletar = valor
+        }   
+    })
+    //delete textoCorrecao[indiceDeletar]
+    textoCorrecao.splice(indiceDeletar, 1)
+    //console.log('correcao', textoCorrecao)
+    
+
+    textoCorrigido.push(jsonSaida)
+    //textoCorrigido.shift()
+   // textoCorrigido = Object.assign({}, textoCorrigido)
+
+   // console.log('-----------',typeof textoCorrigido, textoCorrigido)
+
+  //  let aux = Object.assign({}, textoCorrigido)
     //JSON.stringify(jsonSaida)
-   // aux = JSON.parse(aux)
-   let teste = Object.assign({}, jsonSaida)
-    console.log('-----------',typeof aux, aux)
-    aux = {...Object.assign({}, textoCorrigido), ...jsonSaida }
-    aux = {...jsonSaida, ...{ t: 'fdfs', g: 'fgd'} }
+    // aux = JSON.parse(aux)
+    // let teste = Object.assign({}, jsonSaida)
+    // console.log('-----------',typeof aux, aux)
+    // aux = {...Object.assign({}, textoCorrigido), ...jsonSaida }
+    // aux = {...jsonSaida, ...{ t: 'fdfs', g: 'fgd'} }
     //textoCorrigido = jsonSaida
     //let teste = Object.assign(textoCorrigido, jsonSaida)
    //console.log('-----------',typeof aux, aux)
@@ -269,33 +296,125 @@ const geraRespostaSucesso = (request, response, dados) => {
     //response.json(a)
 }
 
-const salvarCorrecao = (request, response) => {
+const checaOrdem = (id) => {
 
-    const mensagemSucesso = { 
-        situacao: "SUCESSO",
-        descrição: "Correção salva com sucesso"
-    }
+    console.table(textoCorrigido)
 
-    Object.keys(textoCorrigido).forEach(function(item){
-
-       // console.log('id', request.params.id, textoCorrigido[item])
-
-       //console.log(item+  '=' +textoCorrigido[item])
-        if(item == 'id'){
-            if(request.params.id == textoCorrigido[item]){
-                response.json(JSON.stringify(mensagemSucesso, 0, 4))
+    let ordemAux = ''; let ordemOcorreta = true
+    Object.keys(textoCorrigido).forEach(function(value){
+        Object.keys(textoCorrigido[value]).forEach(function(value2){
+        //console.log('ortextocorreidoedem', value, textoCorrigido[value])
+            if(id == textoCorrigido[value][value2].id){
+                ordemAux = textoCorrigido[value][value2].ordem
             }
+        })
+    })
+
+    console.log('valors', idCorrecao)
+    console.log('valorr', typeof ordemAux, ordemAux)
+    Object.keys(idCorrecao).forEach(function(value){
+        console.log('oredem', value, idCorrecao[value])
+        console.log('valors', idCorrecao[value].ordem +1)
+        if(ordemAux > idCorrecao[value].ordem +1){
+            console.log('não pode')
+            ordemOcorreta = false
         }
     })
+    console.log('passo')
+    if(ordemOcorreta)
+        return true
+    else
+        return false
+   
+}
+
+const salvarCorrecao = (request, response) => {
+
+    const mensagemSucesso = JSON.stringify({ 
+                                            'situacao': 'SUCESSO',
+                                            'descrição': 'Correção salva com sucesso'
+                                            }, null, ' ')
+
+    const mensagemItemExistente = JSON.stringify({
+                                    "situacao": "ERRO",
+                                    "tipo": "ITEM_CORRIGIDO",
+                                    "descrição": "Item já corrigido"
+                                    })
+
+    const mensagemItemForaOrdem = {
+                                    "situacao": "ERRO",
+                                    "tipo": "ITEM_INVALIDO",
+                                    "descrição": "Item inválido para correção"
+                                    }
+    let itemExistente = false;
+
+    console.log('entrou-salvar', request.params.id)
+
+  //  console.log('mengam', JSON.parse(mensagemSucesso))
+
+     let tamanho =  Object.keys(idCorrecao).length
+    // if(tamanho < 1){
+    //     let a = JSON.stringify({'tt': 'ff'}, null, ' ')
+    //     a = JSON.parse(a)
+    //     idCorrecao = [a]
+    // }
+// idCorrecao[0] = {idCorrecao: '',
+// ordem: '9999'}
+// idCorrecao[1] = {idCorrecao: '',
+// ordem: '9999'}
+    
+
+    Object.keys(idCorrecao).forEach(function(item){
+        
+      //  console.log('etete', item, idCorrecao[item])
+        if(idCorrecao[item].idCorrecao == request.params.id ){
+           // console.log('ETETETE')
+            response.json(JSON.stringify(mensagemItemExistente, 0, 4))
+            itemExistente = true
+        }
+
+    })
+
+    if(!checaOrdem(request.params.id)){
+        response.json(JSON.stringify(mensagemItemForaOrdem, 0, 4))
+        itemExistente = true
+    }
+
+    console.log( 'simii', Object.keys(idCorrecao).length)
+
+    
+    if(!itemExistente){
+        Object.keys(textoCorrigido).forEach(function(item){
+
+            Object.keys(textoCorrigido[item]).forEach(function(value){
+        // console.log('id', request.params.id, textoCorrigido[item])
+
+            //console.log('valores', value+  '=' +textoCorrigido[item][value])
+            // if(value == 'data'){
+            //     //Object.keys(textoCorrigido[item]).forEach(function(value){
+            //     console.log('data', textoCorrigido[item][value].id)
+            // }
+            
+                if(request.params.id == textoCorrigido[item][value].id){
+
+                   // if()
+                // console.log( 'simii', idCorrecao[tamanho - 1])
+                    idCorrecao[tamanho - 1].idCorrecao = (request.params.id)
+                    idCorrecao[tamanho - 1].ordem = textoCorrigido[item][value].ordem
+                    response.json(JSON.stringify(mensagemSucesso, 0, 4))
+                }
+                
+            })
+        })
+    }
 
                                  
 }
 
-
 app.use('/', router)
 app.post('/correcoes/:id', salvarCorrecao)
-//app.get('/correcoes/proxima/', iniciarCorrecao)
 app.get('/correcoes/', lerArquivo)
+app.get('/correcoes/proxima/', proximaCorrecao)
 app.use('*', (req, res) => {
     res.status(404).send({messagem: "Página não encontrada!"})
 })
