@@ -124,7 +124,7 @@ const proximaCorrecao = (request, response) => {
 const lerArquivo = (request, response) => {
 
     //realizar a leitura de um arquivo no disco
-    fs.readFile('files/tt2.json', 'utf-8', function(err, data) {
+    fs.readFile('files/teste2.json', 'utf-8', function(err, data) {
         if (err) {
             console.log('Erro na leitura')
             return response.status(500).send('Erro ao ler o arquivo.')
