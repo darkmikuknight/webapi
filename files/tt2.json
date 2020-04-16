@@ -31,7 +31,7 @@
         "sequencial": "68300003130127",
         "solicitacao": "2000000886",
         "situacao": "DISPONIVEL",
-        "ordem": 3,
+        "ordem": 2,
         "chave": [
             {
                 "id": 186,
@@ -70,7 +70,7 @@
         "sequencial": "68300003130128",
         "solicitacao": "2000000886",
         "situacao": "DISPONIVEL",
-        "ordem": 2,
+        "ordem": 3,
         "chave": [
             {
                 "id": 186,
