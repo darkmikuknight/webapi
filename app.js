@@ -264,7 +264,7 @@ const salvarCorrecao = (request, response) => {
 
     if(!itemExistente){
 
-        //Verifica e salva o item já corrigo, além de exibir a mensagem que foi salvo corretamente//        
+        //Verifica e salva o item já corrigido, além de exibir a mensagem de que ele foi salvo corretamente//        
         Object.keys(textoCorrigido).forEach(function(item){
             Object.keys(textoCorrigido[item]).forEach(function(value){
                 if(request.params.id == textoCorrigido[item][value].id){
