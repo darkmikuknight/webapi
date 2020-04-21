@@ -4,7 +4,7 @@ const bodyParser = require('body-parser')
 const fs = require('fs')
 const idCorrecao = {} //[{idCorrecao: '', ordem: '9999'}]
 const codigoErro = {codErro: ''}
-const idsArray = [{}]
+const idsArray = []
 var textoCorrecao
 var textoCorrigido = {}
 var textoComDefeito = {}
@@ -407,14 +407,13 @@ const salvaCorrecao = (request, response) => {
         }
     })
 
-
-
     if(!checaOrdem(request.params.id)){
         itemExistente = true
         response.json(mensagemItemForaOrdem)
     }
 
     if(!itemExistente){
+
         //Verifica e salva o item já corrigido, além de exibir a mensagem de que ele foi salvo corretamente//
         console.log('já corrigidos', idCorrecao)
         Object.keys(textoCorrigido).forEach(function(item){
@@ -432,6 +431,7 @@ const salvaCorrecao = (request, response) => {
             })
         })
 
+        //Savla o item com a correção reservada//
         if(!itemJaCorrigido){
             Object.keys(correcaoReservada).forEach(function(item){
                 Object.keys(correcaoReservada[item]).forEach(function(valor){
@@ -457,7 +457,15 @@ const salvaCorrecao = (request, response) => {
             }
         })
 
-        if(!existeItemComDefeito){
+        if(!idsArray.includes(request.params.id) && !existeItemComDefeito){
+            response.json({ 
+                data: null,
+                situacao: "ERRO",
+                tipo: "ID_INVALIDO",
+                descrição: "Não foi encontrado nenhuma correção com ID: '" + request.params.id + "'."
+            })
+        }
+        else if(idsArray.includes(request.params.id) && !existeItemComDefeito){
             response.json({ 
                 data: null,
                 situacao: "ERRO",
@@ -473,9 +481,7 @@ const salvaCorrecao = (request, response) => {
                 descrição: "Valor com staus de 'COM_DEFEITO'"
             })
         }
-    }
-
-                                 
+    }                                 
 }
 
 const listaReservadas = (request, response) =>{
