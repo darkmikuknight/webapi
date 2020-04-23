@@ -29,164 +29,92 @@ const extraiInformacao = (origem) => {
     ), []);
 }
 
-const corrigeItem = (request, response) =>{
-    console.log('boddyd', request.params.id, request.body.chave[0].id)
-   // response.status(200).json({ mensagem: "Recebido com sucesso o request" })
-//console.log('O que é', verificaObjetoComCorrecao)
-    let textoParaCorrigir = [{}]//= verificaObjetoComCorrecao(request, response)
-    let indiceIdCorreto
-
-    if(correcaoReservada !== undefined){
-
-        let ehReservada = false
-        console.log('3333333333s', correcaoReservada)
-        Object.keys(correcaoReservada).forEach(function(valor){
-            if(request.params.id == correcaoReservada[valor].id){
-                indiceIdCorreto = valor
-                ehReservada = true
-                console.log('34444444444', correcaoReservada)
-                //Object.assign(textoParaCorrigir, correcaoReservada[valor])
-            }   
-        })
-
-        if(ehReservada)
-            textoParaCorrigir = [correcaoReservada[indiceIdCorreto]]
-    }
-
-    if(textoCorrecao !== undefined){
-     //   console.log('sfsdfsdfsdfsdf', request.params.id, textoCorrecao)
-        let ehCorrecaoNormal = false
-     console.log('5555555555', correcaoReservada)
-        Object.keys(textoCorrecao).forEach(function(valor){
-            if(request.params.id == textoCorrecao[valor].id){
-                console.log('6666666666', correcaoReservada)
-                indiceIdCorreto = valor
-                ehCorrecaoNormal = true
-                //Object.assign(textoParaCorrigir, textoCorrecao[valor])
-            }   
-        })
-        
-        if(ehCorrecaoNormal)
-            textoParaCorrigir = [textoCorrecao[indiceIdCorreto]]
-    }
-
-    console.log('texto', Object.keys(textoParaCorrigir).length)
-    console.log('textom', textoParaCorrigir)
-    if(textoParaCorrigir[0] !== undefined && Object.keys(textoParaCorrigir[0]).length > 0){
-        if(Object.keys(textoParaCorrigir).length >= 1){
-
-            console.log('777777')
-         
-            //processamento//
-            let semErros = true
-            const idxInicial = 0
-            const itemCorrigido = { id: '', situacao: '', ordem: '', chave: '', valorChave: ''}
-        
-            Object.keys(textoParaCorrigir[idxInicial]).forEach(function(item){
-
-                if(item === 'id'){
-                    itemCorrigido.id = textoParaCorrigir[idxInicial][item]
-                }
-                
-                if(item === 'situacao'){
-                    itemCorrigido.situacao = textoParaCorrigir[idxInicial][item]
-                }
-                
-                if(item === 'ordem'){
-                    itemCorrigido.ordem = textoParaCorrigir[idxInicial][item]
-                }
-
-                if(item === 'chave'){
-                    itemCorrigido.chave = textoParaCorrigir[idxInicial][item]
-                }
-
-            })
-
-            const objeto = extraiInformacao(itemCorrigido.chave)
-            const chaveCorrecao = { num: null, valor: null }
-        
-            console.log('situaos', itemCorrigido.situacao)
-        
-            //Se um item estiver com status Disponível, então verifica se ele contém algum ERRO//
-            if(itemCorrigido.situacao === 'SUCESSO' || itemCorrigido.situacao === 'RESERVADA'){
-
-                let jaEncontrouErro = false
-
-                if(typeof itemCorrigido.chave === 'object'){
-
-                    Object.keys(objeto).forEach(function(item){
-                        
-                        let itemIdx = objeto[item]
-                        
-                        if(itemIdx[0] == 'id')
-                            chaveCorrecao.num = itemIdx[1] 
-
-                        if(itemIdx[0] == 'titulo')
-                            chaveCorrecao.valor = itemIdx[1].replace(/\D/g, '')
-
-                        if(itemIdx[0] == 'opcoes'){
-
-                            let valoresArray = []
-                            
-                            Object.values(itemIdx[1]).forEach(function(value){
-                                valoresArray.push(value.valor)
-                            })
-
-                            //console.log('valores arra', valoresArray, request.body.chave[0].valor.toString())
-                            if(!jaEncontrouErro){
-                                if(!valoresArray.includes(request.body.chave[0].valor)){
-
-                                    idsArray.push(itemCorrigido.id)
-                                    codigoErro.codErro = 2
-                                    console.log('sdfsdfsdfsdfsd')
-                                    textoParaCorrigir[idxInicial].situacao = 'COM_DEFEITO'
-                                    semErros = false
-                                    jaEncontrouErro = true
-                                    erros(request, response, request.body.chave[0].id, request.body.chave[0].valor, textoParaCorrigir[idxInicial])
-                                }
-                            }
-                        } 
-                    })
-                }
-            }
-            
-            /*
-            else if(idsArray.includes(itemCorrigido.id)){
-
-                console.log('Não existem mais correções disponíveis')
-                response.json({ 
-                    data: null,
-                    situacao: "ERRO",
-                    tipo: "SEM_CORRECAO",
-                    descrição: "Item já foi corrigido, porém não a correção não foi salva!"
-                })
-            }
-            */
-
-            //Não foram encontrados erros//
-            if(semErros && (textoParaCorrigir[idxInicial].situacao === 'SUCESSO' || itemCorrigido.situacao === 'RESERVADA')){
-                idsArray.push(itemCorrigido.id)
-                geraRespostaSucesso(request, response, textoParaCorrigir[idxInicial])
-                salvaCorrecao(request, response)
-            }
-        }
-    }
-    else{
-        console.log('aquiiiiiiii', )
-        salvaCorrecao(request, response, request.body.chave[0].valor, request.body.chave[0].id)
-    }
-
-
-}
-
-const exibeCorrecao = (request, response, textoParaCorrigir) => {
+const iniciaCorrecao = (request, response, textoParaCorrigir) => {
   
     //Parte responsável por realizar a correção de cada obejto//  
     //console.log('Inicia correção')
 
-    delete textoParaCorrigir[0].situacao
-    response.status(200).json({ data: textoParaCorrigir[0], situacao: "SUCESSO" })
-    textoParaCorrigir[0].situacao = "SUCESSO" 
+    let semErros = true
+    const idxInicial = 0
+    const itemCorrigido = { id: '', situacao: '', ordem: '', chave: '', valorChave: ''}
+  
+    Object.keys(textoParaCorrigir[idxInicial]).forEach(function(item){
+
+        if(item === 'id'){
+            itemCorrigido.id = textoParaCorrigir[idxInicial][item]
+        }
+        
+        if(item === 'situacao'){
+            itemCorrigido.situacao = textoParaCorrigir[idxInicial][item]
+        }
+        
+        if(item === 'ordem'){
+            itemCorrigido.ordem = textoParaCorrigir[idxInicial][item]
+        }
+
+        if(item === 'chave'){
+            itemCorrigido.chave = textoParaCorrigir[idxInicial][item]
+        }
+
+    })
+
+    const objeto = extraiInformacao(itemCorrigido.chave)
+    const chaveCorrecao = { num: null, valor: null }
+   
+    //console.log(idsArray)
+   
+    //Se um item estiver com status Disponível, então verifica se ele contém algum ERRO//
+    if(itemCorrigido.situacao === 'DISPONIVEL'){
+        if(typeof itemCorrigido.chave == 'object'){
+
+            Object.keys(objeto).forEach(function(item){
+                
+                let itemIdx = objeto[item]
+                
+                if(itemIdx[0] == 'id')
+                    chaveCorrecao.num = itemIdx[1] 
+
+                if(itemIdx[0] == 'titulo')
+                    chaveCorrecao.valor = itemIdx[1].replace(/\D/g, '')
+
+                if(itemIdx[0] == 'opcoes'){
+
+                    let valoresArray = []
+                    
+                    Object.values(itemIdx[1]).forEach(function(value){
+                        valoresArray.push(value.valor)
+                    })
+                    
+                    if(!valoresArray.includes(chaveCorrecao.valor)){
+                        idsArray.push(itemCorrigido.id)
+                        codigoErro.codErro = 2
+                        textoParaCorrigir[idxInicial].situacao = 'COM_DEFEITO'
+                        semErros = false
+                        erros(request, response, chaveCorrecao.num, chaveCorrecao.valor, textoParaCorrigir[idxInicial])
+                    }
+                } 
+            })
+        }
+    }
+    
+    /*
+    else if(idsArray.includes(itemCorrigido.id)){
+
+        console.log('Não existem mais correções disponíveis')
+        response.json({ 
+            data: null,
+            situacao: "ERRO",
+            tipo: "SEM_CORRECAO",
+            descrição: "Item já foi corrigido, porém não a correção não foi salva!"
+        })
+    }
+    */
+
+    //Não foram encontrados erros//
+    if(semErros){   // & textoParaCorrigir[idxInicial].situacao === 'DISPONIVEL'){
+        idsArray.push(itemCorrigido.id)
+        geraRespostaSucesso(request, response, textoParaCorrigir[idxInicial])
+    }
 }
 
 const proximaCorrecao = (request, response) => {
@@ -215,11 +143,11 @@ const proximaCorrecao = (request, response) => {
             })
         }
         else{
-            exibeCorrecao(request, response, correcaoReservada)
+            iniciaCorrecao(request, response, correcaoReservada)
         }
     }
     else if(Object.keys(textoCorrecao).length >= 1){
-        exibeCorrecao(request, response, textoCorrecao)
+        iniciaCorrecao(request, response, textoCorrecao)
     }
    else{
        // console.log('Sem itens para corrigir')
@@ -328,7 +256,7 @@ const lerArquivo = (request, response) => {
 
         if(textoCorrecao === undefined){
             textoCorrecao = JSON.parse(data.toString())
-            console.log('Leu arquivo')
+            //console.log('Leu arquivo')
             response.status(200).json({
                 mensagem: "O arquivo lido com sucesso! Inicie as correções com ../correcoes/proxima/"
             })
@@ -376,11 +304,11 @@ const erros = (request, response, chaveId, chaveValor, textoDefeito) => {
     }
 
     if(codigoErro.codErro == 2){
-        // response.status(200).json({ situacao: "ERRO",
-        //                 tipo: "CHAVE_INCORRETA",
-        //                 descrição: "Chave de correção incorreta. Valor '" + chaveValor + "'não é válido para o item " + chaveId
-        //              })
-        salvaCorrecao(request, response, chaveValor, chaveId)   
+        response.status(200).json({ situacao: "ERRO",
+                        tipo: "CHAVE_INCORRETA",
+                        descrição: "Chave de correção incorreta. Valor '" + chaveValor + "'não é válido para o item " + chaveId
+                     })  
+       
     }
 }
 
@@ -424,7 +352,7 @@ const geraRespostaSucesso = (request, response, dados) => {
     }
 
     textoCorrigido.push({ data: dados, situacao: "CORRIGIDA" })
-    //response.status(200).json(jsonSaida)
+    response.status(200).json(jsonSaida)
 }
 
 const checaOrdem = (id) => {
@@ -469,7 +397,7 @@ const checaOrdem = (id) => {
         return false
 }
 
-const salvaCorrecao = (request, response, chaveValor, chaveId) => {
+const salvaCorrecao = (request, response) => {
 
     //Responsável por salvar e gerar as mensagens, conforme se ocorreu sucesso ou não no processo//
 
@@ -547,7 +475,7 @@ const salvaCorrecao = (request, response, chaveValor, chaveId) => {
 
     if(!itemJaCorrigido && !itemExistente){
         /*Caso o item NÃO tenha sido salvo e sua ordem estiver conforme a regra 3, então se verificar se
-        / ele está com status de COM_DEFEITO ou se não existem nenhuma ID que foi informada ou se não existem
+        / ele está com status de COM_DEFEITO ou se não existe nenhum ID que foi informado ou se não existem
         / mais itens para correção.
         */
 
@@ -577,17 +505,18 @@ const salvaCorrecao = (request, response, chaveValor, chaveId) => {
         }
         else{
             response.status(404).json({ 
-                    situacao: "ERRO",
-                    tipo: "CHAVE_INCORRETA",
-                    descrição: "Chave de correção incorreta. Valor '" + chaveValor + "' não é válido para o item " + chaveId
-            }) 
+                data: null,
+                situacao: "ERRO",
+                tipo: "SEM_CORRECAO",
+                descrição: "Valor com staus de 'COM_DEFEITO'"
+            })
         }
     }                                 
 }
 
 const listaReservadas = (request, response) =>{
     //Retornar um json com todos os itens que já foram reservados//
-    
+
     if(Object.keys(correcaoReservada).length >= 1)
         response.status(200).json(correcaoReservada)
     else{
@@ -596,8 +525,7 @@ const listaReservadas = (request, response) =>{
 }
 
 app.use('/', router)
-//app.post('/correcoes/:id', salvaCorrecao)
-app.post('/correcoes/:id', corrigeItem)
+app.post('/correcoes/:id', salvaCorrecao)
 app.post('/correcoes/reservadas/:id', reservaCorrecao)
 app.get('/correcoes/', lerArquivo)
 app.get('/correcoes/proxima/', proximaCorrecao)
