@@ -380,7 +380,6 @@ const geraRespostaSucesso = (request, response, dados) => {
         textoCorrigido.shift()
     }
     
-    const jsonSaida = { data: dados, situacao: "SUCESSO" }
     let indiceDeletar
     let naoEhReservada = false
 
@@ -409,7 +408,6 @@ const geraRespostaSucesso = (request, response, dados) => {
     }
 
     textoCorrigido.push({ data: dados, situacao: "CORRIGIDA" })
-    //response.status(200).json(jsonSaida)
 }
 
 const checaOrdem = (id) => {
