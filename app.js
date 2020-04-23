@@ -5,17 +5,17 @@ const fs = require('fs')
 const idCorrecao = {} //[{idCorrecao: '', ordem: '9999'}]
 const codigoErro = {codErro: ''}
 const idsArray = []
-var textoCorrecao
+var textoCorrecao //talvez usar let em vez de var?
 var textoCorrigido = {}
 var textoComDefeito = {}
-var correcaoReservada = {} //testar isso com let
+var correcaoReservada = {} 
 
 app.use(bodyParser.urlencoded({extended: true}))
 app.use(bodyParser.json())
 
 const router = express.Router()
 
-router.get('/', (request, response) => response.json({messagem: 'Web API funcionando!'}))
+router.get('/', (request, response) => response.status(200).json({messagem: 'Web API funcionando!'}))
 
 const extraiInformacao = (origem) => {
 
@@ -117,7 +117,7 @@ const iniciaCorrecao = (request, response, textoParaCorrigir) => {
     if(semErros){ // && textoParaCorrigir[idxInicial].situacao === 'DISPONIVEL'){
         console.log('Inicia cor4reção')
         idsArray.push(itemCorrigido.id)
-       geraRespostaSucesso(request, response, textoParaCorrigir[idxInicial])
+        geraRespostaSucesso(request, response, textoParaCorrigir[idxInicial])
     }
     console.log('Inicia co55rreção', semErros)
 }
@@ -128,7 +128,7 @@ const proximaCorrecao = (request, response) => {
     console.log('Próxima correção')
 
     if(textoCorrecao === undefined){
-        response.json({ 
+        response.status(404).json({ 
             data: null,
             situacao: "ERRO",
             tipo: "ARQUIVO_NAO_FOI_LIDO",
@@ -136,15 +136,12 @@ const proximaCorrecao = (request, response) => {
         })
 
     }
-    else if(Object.keys(textoCorrecao).length >= 1){
-        iniciaCorrecao(request, response, textoCorrecao)
-    }
     else if(request.query.reservada === 'true' || (Object.keys(textoCorrecao).length == 0 && Object.keys(correcaoReservada).length >= 1)){
         console.log('Próxima correção reservada')
 
         console.log('tamanho', Object.keys(correcaoReservada).length)
         if(Object.keys(correcaoReservada).length == 0){
-            response.json({ 
+            response.status(404).json({ 
                 data: null,
                 situacao: "ERRO",
                 tipo: "SEM_CORRECAO_RESERVADA",
@@ -155,21 +152,26 @@ const proximaCorrecao = (request, response) => {
             iniciaCorrecao(request, response, correcaoReservada)
         }
     }
+    else if(Object.keys(textoCorrecao).length >= 1){
+        iniciaCorrecao(request, response, textoCorrecao)
+    }
    else{
         console.log('Sem itens para corrigir')
-        response.json({ 
+        response.status(404).json({ 
                         data: null,
                         situacao: "ERRO",
                         tipo: "SEM_CORRECAO",
                         descrição: "Todos os itens disponíveis já foram corrigidos"
-                    })
+        })
    } 
 }
 
 const reservaCorrecao = (request, response) =>{
 
     console.log('Reservao correção ID=', request.params.id)
-    let indiceDeletar; let encontrouCorrecaoRe = false; let mensagemRetornoReservada
+    let indiceDeletar
+    let encontrouCorrecaoRe = false
+    let mensagemRetornoReservada
 
     if(Object.keys(correcaoReservada).length < 1){
         let a = JSON.stringify({'tt': 'ff'}, null, ' ')
@@ -197,7 +199,7 @@ const reservaCorrecao = (request, response) =>{
     if(encontrouCorrecaoRe){
         textoCorrecao.splice(indiceDeletar, 1)
         // console.log('deposi de reservar', textoCorrecao)
-        response.json(mensagemRetornoReservada)
+        response.status(200).json(mensagemRetornoReservada)
     }
     else{
         //Caso o item já tenha sido corrigido ou adicionado a lista de correção reservada//
@@ -215,17 +217,29 @@ const reservaCorrecao = (request, response) =>{
         })
 
         if(correcaoJaReservada){
-            response.json(mensagemRetornoReservada)
+            response.status(200).json(mensagemRetornoReservada)
         }
         else{
-            response.json({
-                "situacao": "ERRO",
-                "tipo": "ITEM_CORRIGIDO",
-                "descrição": "Item já corrigido"
-            })
+            //console.log('sfdfsfdsfsfdsfd', idsArray.inculdes(request.params.id))
+            if(idsArray.includes(request.params.id)){
+                response.status(200).json({
+                    "situacao": "ERRO",
+                    "tipo": "ITEM_CORRIGIDO",
+                    "descrição": "Item já corrigido"
+                })
+            }
+            else{
+                console.log('sfdfsfdsfsfdsfd')
+                response.status(404).json({
+                    "situacao": "ERRO",
+                    "tipo": "NAO_ENCONTRADO",
+                    "descrição": "Não foi encontrado nenhum item com o ID '"+ request.params.id +"'!"
+                })
+            }
+
+           
         }
-    }
-       
+    }       
 }
 
 const lerArquivo = (request, response) => {
@@ -233,21 +247,21 @@ const lerArquivo = (request, response) => {
     //realizar a leitura de um arquivo no disco
     fs.readFile('files/teste2.json', 'utf-8', function(err, data){
         if(err){
-            console.log('Erro na leitura')
+           // console.log('Erro na leitura')
             return response.status(500).send('Erro ao ler o arquivo.')
         }
 
         if(textoCorrecao === undefined){
             textoCorrecao = JSON.parse(data.toString())
-            console.log('Leu arquivo', textoCorrecao)
+            console.log('Leu arquivo')
             //iniciaCorrecao(request, response, textoCorrecao)
             //response.end()
-            response.json({
+            response.status(200).json({
                 mensagem: "O arquivo lido com sucesso! Inicie as correções com ../correcoes/proxima/"
             })
         }
         else{
-            response.json({
+            response.status(200).json({
                 mensagem: "Atenção, o arquivo já foi lido! Inicie as correções com ../correcoes/proxima/"
             })
         }
@@ -289,7 +303,7 @@ const erros = (request, response, chaveId, chaveValor, textoDefeito) => {
     }
 
     if(codigoErro.codErro == 2){
-        response.json({ situacao: "ERRO",
+        response.status(200).json({ situacao: "ERRO",
                         tipo: "CHAVE_INCORRETA",
                         descrição: "Chave de correção incorreta. Valor '" + chaveValor + "'não é válido para o item " + chaveId
                      })  
@@ -310,7 +324,7 @@ const geraRespostaSucesso = (request, response, dados) => {
     
     const jsonSaida = { data: dados, situacao: "SUCESSO" }
     let indiceDeletar
-
+/*ARRUMAR PARA RESERVADA*/
     Object.keys(textoCorrecao).forEach(function(valor){
         if(dados.id == textoCorrecao[valor].id){
            
@@ -324,8 +338,8 @@ const geraRespostaSucesso = (request, response, dados) => {
         textoCorrecao.splice(indiceDeletar, 1)
   
     textoCorrigido.push({ data: dados, situacao: "CORRIGIDA" } )
-   
-    response.json(jsonSaida)
+   console.log('veio daqui')
+    response.status(200).json(jsonSaida)
 }
 
 const checaOrdem = (id) => {
@@ -403,13 +417,13 @@ const salvaCorrecao = (request, response) => {
 
         if(idCorrecao[item].idCorrecao == request.params.id ){
             itemExistente = true
-            response.json(mensagemItemExistente)
+            response.status(404).json(mensagemItemExistente)
         }
     })
 
     if(!checaOrdem(request.params.id)){
         itemExistente = true
-        response.json(mensagemItemForaOrdem)
+        response.status(404).json(mensagemItemForaOrdem)
     }
 
     if(!itemExistente){
@@ -458,7 +472,7 @@ const salvaCorrecao = (request, response) => {
         })
 
         if(!idsArray.includes(request.params.id) && !existeItemComDefeito){
-            response.json({ 
+            response.status(404).json({ 
                 data: null,
                 situacao: "ERRO",
                 tipo: "ID_INVALIDO",
@@ -466,7 +480,7 @@ const salvaCorrecao = (request, response) => {
             })
         }
         else if(idsArray.includes(request.params.id) && !existeItemComDefeito){
-            response.json({ 
+            response.status(404).json({ 
                 data: null,
                 situacao: "ERRO",
                 tipo: "SEM_CORRECAO",
@@ -474,7 +488,7 @@ const salvaCorrecao = (request, response) => {
             })
         }
         else{
-            response.json({ 
+            response.status(404).json({ 
                 data: null,
                 situacao: "ERRO",
                 tipo: "SEM_CORRECAO",
@@ -487,9 +501,9 @@ const salvaCorrecao = (request, response) => {
 const listaReservadas = (request, response) =>{
 
     if(Object.keys(correcaoReservada).length >= 1)
-        response.json(correcaoReservada)
+        response.status(200).json(correcaoReservada)
     else{
-        response.json({mensagem: "Não foram encontrados itens para correção reservada!"})
+        response.status(200).json({mensagem: "Não foram encontrados itens para correção reservada!"})
     }
 }
 
@@ -504,4 +518,4 @@ app.use('*', (req, res) => {
 })
 
 module.exports = app
-console.log('API funcionando')
+//console.log('API funcionando')
