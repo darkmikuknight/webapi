@@ -83,19 +83,40 @@ describe('Correção não Reservada', () => {
   it('Deveria salvar uma correção não reservada', async () => {
     
     const salvaCorrecao = await request.post('/correcoes/9859662')
+      .send({
+        "chave":[{
+          "id": "186",
+          "valor": "0"
+        }]
+      })
     expect(salvaCorrecao.status).toBe(200)
+  })
+  
+  it("Não deveria salvar uma correção em que a 'situacao' é 'COM_DEFEITO'", async () => {
+    proxima = await request.get('/correcoes/proxima/')
+    //proxima2 = await request.get('/correcoes/proxima/')
+  
+    const salvaCorrecao = await request.post('/correcoes/9859663')
+      .send({
+        "chave":[{
+          "id": "186",
+          "valor": "99"
+        }]
+      })
+    expect(salvaCorrecao.status).toBe(404)
   })
 
   //Vale tanto para salvar uma correção NÃO RESERVADA quanto a RESERVADA//
   it('Não deveria salvar uma correção em que a ordem não corresponde com a regra 3 (ordem 1 -> 2 -> 3)', async () => {
-    
+    //proxima = await request.get('/correcoes/proxima/')
+    proxima = await request.get('/correcoes/proxima/')
     const salvaCorrecao = await request.post('/correcoes/9859664')
-    expect(salvaCorrecao.status).toBe(404)
-  })
-
-  it("Não deveria salvar uma correção em que a 'situacao' é 'COM_DEFEITO'", async () => {
-    
-    const salvaCorrecao = await request.post('/correcoes/9859663')
+      .send({
+        "chave":[{
+          "id": "186",
+          "valor": "0"
+        }]
+      })
     expect(salvaCorrecao.status).toBe(404)
   })
 
@@ -137,6 +158,12 @@ describe('Correção Reservada', () => {
   it('Deveria salvar uma correção reservada', async () => {
     
     const AdicionaReservada = await request.post('/correcoes/9859665')
+      .send({
+        "chave":[{
+          "id": "186",
+          "valor": "0"
+        }]
+      })
     expect(AdicionaReservada.status).toBe(200)
   })
 
